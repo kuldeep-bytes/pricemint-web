@@ -295,14 +295,32 @@ def search():
     ]
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True, args=['--disable-blink-features=AutomationControlled'])
+    # 1. Memory saving args ke sath launch karein
+     browser = p.chromium.launch(
+        headless=True,
+        args=[
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--no-zygote',
+            '--single-process'
+        ]
+    )
+    try:
         context = browser.new_context(user_agent=USER_AGENT)
+
+        # 2. Heavy resources (Images, CSS, Fonts) block karein
+        context.route("**/*", lambda route: route.abort() 
+                      if route.request.resource_type in ["image", "stylesheet", "font", "media"] 
+                      else route.continue_())
 
         for cfg in store_configs:
             res = cfg["scraper"](context, product_name)
             if res:
                 results.append(res)
-                
+    finally:
+        # 3. Memory clean karne ke liye close karein
         browser.close()
 
     found_sites = {r["site"] for r in results}
