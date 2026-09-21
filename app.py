@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 CORS(app)  # Frontend connection ke liye CORS enable kar diya hai
@@ -209,7 +210,7 @@ def compare_prices():
 
 @app.route('/')
 def home():
-    return jsonify({'status': 'online', 'message': 'PriceMint API Server is Running!'})
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
